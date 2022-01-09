@@ -43,9 +43,9 @@ class GA:
 
     def create_population(self):
         """ Creates the initial population of `self.size` elements """
-        self.population = np.empty((self.population_size, n))
+        self.population = np.empty((self.population_size, self.n))
         for individual in self.population:
-            individual[:] = GA.rng.choice(self.m, size=n)
+            individual[:] = GA.rng.choice(self.m, size=self.n)
 
 
     def population_fitness(self):
@@ -59,8 +59,8 @@ class GA:
         :param individual: a distribution of developers among tasks (`i`-th task is taken by developer `individual[i]`)
         :return: fitness of an `individual`
         """
-        devs_time = np.zeros(m)
-        for dev in range(m):
+        devs_time = np.zeros(self.m)
+        for dev in range(self.m):
             inds = np.where(individual == dev)[0]
             tasks_categories = self.tasks_categories[inds]
             est_time = self.estimated_time[inds]
@@ -109,7 +109,7 @@ class GA:
         """ Mutates new individuals, number of new individuals is defined by `self.genes_mutate` """
         for i in range(len(self.new)):
             j = GA.rng.choice(self.n, size=self.genes_mutate)
-            self.new[i, j] = GA.rng.choice(m, size=self.genes_mutate)
+            self.new[i, j] = GA.rng.choice(self.m, size=self.genes_mutate)
 
     def step(self):
         """ Performs a step of a genetic algorithm, finds best individual of all the previous steps and current one """
