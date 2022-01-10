@@ -78,7 +78,7 @@ class GA:
         elif self.select_policy == 'roulette wheel':
             inds = self.roulette_wheel_selection()
         else:
-            raise NotImplemented('no such selection policy')
+            raise NotImplementedError('no such selection policy')
         self.population = self.population[inds].copy()
 
     def elitism_selection(self) -> np.ndarray:
