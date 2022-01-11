@@ -86,7 +86,7 @@ class GA:
         """ Performs selection elitism policy, number of remaining individuals is `self.top`
         :return: indices of selected individuals from `self.population`
         """
-        return np.argsort(self.fitness)[self.top]
+        return np.argsort(self.fitness)[:self.top]
 
 
     def roulette_wheel_selection(self) -> np.ndarray:
