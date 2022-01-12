@@ -33,7 +33,7 @@ class GA:
 
         self.fitness = None
         self.population = None
-        self.best_fitness = np.inf
+        self.best_fitness = 0.
         self.best_individual = None
         self.best_index = None
 
@@ -66,7 +66,7 @@ class GA:
             difficulty = self.coefficients[dev]
             devs_time[dev] = sum(map(lambda cat: sum(difficulty[cat] * est_time[np.where(tasks_categories == cat)]),
                                      range(self.n_categories)))
-        return np.max(devs_time)
+        return 1e6 / np.max(devs_time)
 
     def selection(self):
         """ Selects elements to create next generation using chosen selection policy
@@ -76,8 +76,6 @@ class GA:
             inds = self.elitism_selection()
         elif self.select_policy == 'roulette wheel':
             inds = self.roulette_wheel_selection()
-        elif self.select_policy == 'sus':
-            inds = self.stochastic_universal_selection()
         else:
             raise NotImplementedError('no such selection policy')
         self.population = self.population[inds].copy()
@@ -86,7 +84,7 @@ class GA:
         """ Performs selection elitism policy, number of remaining individuals is `self.top`
         :return: indices of selected individuals from `self.population`
         """
-        return np.argsort(self.fitness)[:self.top]
+        return np.argsort(self.fitness)[-self.top:]
 
 
     def roulette_wheel_selection(self) -> np.ndarray:
@@ -96,26 +94,9 @@ class GA:
         probs = self.fitness / np.sum(self.fitness)
         return GA.rng.choice(self.population_size, size=self.top, p=probs)
 
-    def stochastic_universal_selection(self) -> np.ndarray:
-        """ Performs selection stochastic universal policy, number of remaining individuals is `self.top`
-         :return: indices of selected individuals from `self.population`
-         """
-        s = self.fitness.sum()
-        interval = s / self.top
-        res = []
-        start = GA.rng.integers(int(interval), size=1)
-        point = start
-        thresholds = np.hstack([0., self.fitness.cumsum()])
-        i = 0
-        for point in np.arange(start, s, interval):
-            while thresholds[i] < point:
-                i += 1
-            else:
-                res.append(i - 1)
-        return np.array(res)
-    
+
     def crossover(self):
-        """ Performs one point crossover of remaining (after selection) individuals and creates new individuals """
+        """ Performs crossover of remaining (after selection) individuals and creates new individuals """
         self.new = np.zeros((self.population_size - len(self.population), self.n))
         for i in range(len(self.new)):
             a, b = GA.rng.choice(self.population.shape[0], size=2, replace=False)
@@ -137,16 +118,7 @@ class GA:
         self.population = np.vstack((self.population, self.new))
         self.population_fitness()
 
-        new_best_ind = np.argmin(self.fitness)
-        if self.fitness[new_best_ind] < self.best_fitness:
+        new_best_ind = np.argmax(self.fitness)
+        if self.fitness[new_best_ind] > self.best_fitness:
             self.best_fitness = self.fitness[new_best_ind]
             self.best_individual = self.population[new_best_ind]
-
-    def score(self) -> float:
-        """
-        Calculates task-specific score of algorithm performance up till last step
-        :return: the best score
-        """
-        if self.best_fitness < np.inf:
-            return 1e6 / self.best_fitness
-        return 0.
