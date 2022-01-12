@@ -13,5 +13,5 @@ n_categories = 4
 ga = GA(n, m, n_categories, categories, time, coefficients,
         population_size=15, top=0.5, genes_mutate=0.4, select_policy='roulette wheel')
 
-while ga.score() < 1650:
+while ga.best_fitness < 1650:
     ga.step()
